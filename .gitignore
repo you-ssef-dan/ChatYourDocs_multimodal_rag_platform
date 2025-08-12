@@ -12,13 +12,7 @@ __pycache__/
 .env
 
 # Ignore vector store files
-database/
-!database/
-!database/.gitkeep
 database/*
 
 # Ignore documents folder contents
-documents/
-!documents/
-!documents/.gitkeep
 documents/*
