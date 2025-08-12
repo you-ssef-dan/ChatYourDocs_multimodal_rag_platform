@@ -1,0 +1,24 @@
+# Ignore Python cache
+ingestions/__pycache__/
+models/__pycache__/
+prompts/__pycache__/
+__pycache__/
+*.pyc
+
+# Ignore virtual environment
+/venv/
+
+# Ignore environment variables file
+.env
+
+# Ignore vector store files
+database/
+!database/
+!database/.gitkeep
+database/*
+
+# Ignore documents folder contents
+documents/
+!documents/
+!documents/.gitkeep
+documents/*

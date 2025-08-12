@@ -1,0 +1,4 @@
+name    age	city	salary
+khalid	22	rabat	20000
+hamza	44	berrechid	30000
+youssef	66	casa	15000

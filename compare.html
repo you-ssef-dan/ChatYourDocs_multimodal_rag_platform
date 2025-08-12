@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: From Project to Professional RAG Pipelines</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .tradeoff-triangle {
+            position: relative;
+            width: 0;
+            height: 0;
+            border-left: 120px solid transparent;
+            border-right: 120px solid transparent;
+            border-bottom: 200px solid #0079FF;
+            margin: 2rem auto;
+        }
+        .tradeoff-label {
+            position: absolute;
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .flowchart-arrow {
+            position: relative;
+            width: 100%;
+            height: 4px;
+            background-color: #52AFFF;
+        }
+        .flowchart-arrow::after {
+            content: '';
+            position: absolute;
+            right: -1px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 12px solid #52AFFF;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-black text-[#004AAD] mb-4">From Project to Professional</h1>
+            <p class="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">Optimizing Your RAG Pipeline by Mastering the Core Trade-Offs</p>
+        </header>
+
+        <section id="tradeoff" class="mb-20">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-10">
+                <h2 class="text-3xl font-bold text-center text-[#004AAD] mb-4">The Performance Triangle</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">A professional RAG implementation strategically balances three competing factors. While a project approach often focuses on one, a robust system finds the optimal equilibrium for its specific use case.</p>
+                <div class="relative w-full h-72 md:h-80 flex items-center justify-center">
+                    <div class="tradeoff-triangle">
+                        <span class="tradeoff-label" style="top: -30px; left: 50%; transform: translateX(-50%);">Accuracy</span>
+                        <span class="tradeoff-label" style="bottom: -5px; left: -100px;">Speed</span>
+                        <span class="tradeoff-label" style="bottom: -5px; right: -80px;">Cost</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pipeline-deep-dive" class="mb-16">
+            <h2 class="text-4xl font-bold text-center text-[#004AAD] mb-12">Deconstructing the Pipeline: A Performance Deep Dive</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
+                    <h3 class="text-2xl font-bold text-[#0079FF] mb-4">Stage 1: Data Ingestion & Parsing</h3>
+                    <p class="text-gray-600 mb-6">The quality of your entire pipeline is determined at this first step. Your current approach uses Docling, which is great for simple markdown conversion but struggles with complex layouts. This choice has a direct downstream impact on what's possible in later stages.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="chart-container h-80 md:h-96">
+                            <canvas id="parserComparisonChart"></canvas>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-2 text-center">Parsing Choice Dictates Chunking Strategy</h4>
+                            <div class="flex flex-col items-center space-y-4">
+                                <div class="bg-red-100 border-2 border-red-400 text-red-700 rounded-lg p-4 w-full max-w-sm text-center">
+                                    <p class="font-bold">Project Approach (e.g., Docling)</p>
+                                    <p class="text-sm">Converts to Markdown, Loses Layout</p>
+                                </div>
+                                <div class="w-24 h-12 flex items-center justify-center"><div class="flowchart-arrow rotate-90"></div></div>
+                                <div class="bg-gray-200 text-gray-500 rounded-lg p-4 w-full max-w-sm text-center">
+                                    <p class="font-bold">❌ Layout-Aware Chunking Impossible</p>
+                                    <p class="text-sm">Positional context is destroyed.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-[#0079FF] mb-4">Stage 2: Text Chunking</h3>
+                    <p class="text-gray-600 mb-6">Your use of Semantic Chunking is a strong professional choice. However, its effectiveness is directly tied to the embedding model. This chart compares strategies based on their ability to preserve context versus their computational demand.</p>
+                    <div class="chart-container h-96">
+                        <canvas id="chunkingStrategyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-[#0079FF] mb-4">Stage 3: The Embedding Layer</h3>
+                    <p class="text-gray-600 mb-6">You're using `all-mpnet-base-v2`, a solid general-purpose model. For optimal performance, especially with domain-specific content, it's crucial to evaluate models based on performance, cost (dimensionality), and speed.</p>
+                    <div class="chart-container h-96">
+                        <canvas id="embeddingModelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="kpis" class="mb-20">
+            <h2 class="text-4xl font-bold text-center text-[#004AAD] mb-12">Measuring What Matters: A KPI Framework</h2>
+            <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">A professional pipeline isn't "done"—it's continuously monitored. Move beyond anecdotal evidence to a data-driven evaluation process focusing on Retrieval, Generation, and System performance.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                    <h3 class="text-xl font-bold text-[#0079FF] mb-4">Retrieval Quality</h3>
+                    <p class="text-gray-600 mb-4 h-16">How well does the system find relevant information?</p>
+                    <div class="font-black text-5xl text-[#004AAD]">85<span class="text-3xl">%</span></div>
+                    <p class="text-sm text-gray-500 mt-2">Precision@5</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                    <h3 class="text-xl font-bold text-[#0079FF] mb-4">Generation Quality</h3>
+                    <p class="text-gray-600 mb-4 h-16">Is the final answer accurate and faithful to the source?</p>
+                    <div class="font-black text-5xl text-[#004AAD]">92<span class="text-3xl">%</span></div>
+                    <p class="text-sm text-gray-500 mt-2">Answer Correctness</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                    <h3 class="text-xl font-bold text-[#0079FF] mb-4">System Performance</h3>
+                    <p class="text-gray-600 mb-4 h-16">Is the system fast, efficient, and cost-effective?</p>
+                    <div class="font-black text-5xl text-[#004AAD]">1.2<span class="text-3xl">s</span></div>
+                    <p class="text-sm text-gray-500 mt-2">End-to-End Latency</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap">
+            <h2 class="text-4xl font-bold text-center text-[#004AAD] mb-12">Your Strategic Roadmap to Optimization</h2>
+            <div class="max-w-3xl mx-auto">
+                <div class="space-y-8">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-[#0079FF] text-white text-xl font-bold rounded-full flex items-center justify-center mr-6">1</div>
+                        <div class="bg-white rounded-lg shadow-md p-6 flex-1">
+                            <h3 class="font-bold text-lg text-[#004AAD]">Diagnose the Ingestion Layer</h3>
+                            <p class="text-gray-600 mt-2">Quantitatively and qualitatively evaluate your current parsing output. If tables and layouts are misinterpreted, benchmark advanced parsers like LLMWhisperer (for accuracy) or LlamaParse (for speed).</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-[#0079FF] text-white text-xl font-bold rounded-full flex items-center justify-center mr-6">2</div>
+                        <div class="bg-white rounded-lg shadow-md p-6 flex-1">
+                            <h3 class="font-bold text-lg text-[#004AAD]">Upgrade Your Chunking Strategy</h3>
+                            <p class="text-gray-600 mt-2">If your new parser preserves layout, experiment with Layout-Aware chunking. Continue to use Semantic Chunking but test its performance with different, potentially more powerful, embedding models.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-[#0079FF] text-white text-xl font-bold rounded-full flex items-center justify-center mr-6">3</div>
+                        <div class="bg-white rounded-lg shadow-md p-6 flex-1">
+                            <h3 class="font-bold text-lg text-[#004AAD]">Strategically Select Your Embedding Model</h3>
+                            <p class="text-gray-600 mt-2">Use the MTEB leaderboard as a starting point, but benchmark the top 2-3 models on your own data. Analyze the trade-off between retrieval accuracy, latency, and cost (vector size).</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-[#52AFFF] text-white text-xl font-bold rounded-full flex items-center justify-center mr-6">4</div>
+                        <div class="bg-white rounded-lg shadow-lg p-6 flex-1 border-2 border-[#0079FF]">
+                            <h3 class="font-bold text-lg text-[#004AAD]">Build a Continuous Evaluation Framework</h3>
+                            <p class="text-gray-600 mt-2">This is the most critical step. Create a "gold standard" dataset and automate testing using both deterministic metrics and LLM-as-a-judge methodologies to monitor for performance drift over time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center p-8 mt-12 bg-[#004AAD]">
+        <p class="text-white">Move from a static project to a resilient, continuously improving system.</p>
+    </footer>
+
+    <script>
+        const wrapLabel = (label, maxWidth) => {
+            if (typeof label !== 'string' || label.length <= maxWidth) {
+                return label;
+            }
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + word).length > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                }
+                currentLine += word + ' ';
+            }
+            lines.push(currentLine.trim());
+            return lines;
+        };
+
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+        
+        const sharedChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#1f2937',
+                        font: {
+                            family: "'Inter', sans-serif",
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    },
+                    backgroundColor: '#004AAD',
+                    titleFont: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+                    bodyFont: { size: 12, family: "'Inter', sans-serif" },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false,
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#4b5563', font: { family: "'Inter', sans-serif" } },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: { color: '#4b5563', font: { family: "'Inter', sans-serif" } },
+                    grid: { color: '#e5e7eb' }
+                }
+            }
+        };
+
+        const colors = {
+            deepBlue: '#004AAD',
+            brightBlue: '#0079FF',
+            lightBlue: '#52AFFF',
+            paleBlue: '#B3D9FF',
+        };
+
+        const parserData = {
+            labels: ['Docling', 'LlamaParse', 'LLMWhisperer', 'Unstructured'],
+            datasets: [{
+                label: 'Processing Speed (Seconds for 10 pages, est.)',
+                data: [62.8, 6, 25, 100],
+                backgroundColor: [colors.lightBlue, colors.brightBlue, colors.deepBlue, colors.paleBlue],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        };
+
+        new Chart(document.getElementById('parserComparisonChart'), {
+            type: 'bar',
+            data: parserData,
+            options: { ...sharedChartOptions,
+                scales: {
+                    y: { ...sharedChartOptions.scales.y, title: { display: true, text: 'Time (seconds)', color: '#1f2937' } }
+                }
+            }
+        });
+
+        const chunkingData = {
+            labels: ['Fixed-Size', 'Recursive', 'Semantic', 'Layout-Aware'].map(l => wrapLabel(l, 10)),
+            datasets: [
+                {
+                    label: 'Context Preservation',
+                    data: [20, 50, 90, 85],
+                    backgroundColor: colors.deepBlue,
+                },
+                {
+                    label: 'Computational Cost',
+                    data: [10, 20, 60, 55],
+                    backgroundColor: colors.lightBlue,
+                }
+            ]
+        };
+
+        new Chart(document.getElementById('chunkingStrategyChart'), {
+            type: 'bar',
+            data: chunkingData,
+            options: { ...sharedChartOptions,
+                scales: {
+                    x: { ...sharedChartOptions.scales.x, stacked: true },
+                    y: { ...sharedChartOptions.scales.y, stacked: true }
+                }
+            }
+        });
+
+        const embeddingData = {
+            labels: ['Performance', 'Domain Specificity', 'Low Cost (Small Dim)', 'Speed (Latency)', 'General Purpose'],
+            datasets: [{
+                label: 'all-mpnet-base-v2 (Yours)',
+                data: [7, 4, 8, 8, 9],
+                fill: true,
+                backgroundColor: 'rgba(82, 175, 255, 0.2)',
+                borderColor: colors.lightBlue,
+                pointBackgroundColor: colors.lightBlue,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: colors.lightBlue
+            }, {
+                label: 'bge-large-en-v1.5',
+                data: [9, 6, 6, 7, 8],
+                fill: true,
+                backgroundColor: 'rgba(0, 121, 255, 0.2)',
+                borderColor: colors.brightBlue,
+                pointBackgroundColor: colors.brightBlue,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: colors.brightBlue
+            }, {
+                label: 'Fine-Tuned Model',
+                data: [10, 10, 7, 6, 5],
+                fill: true,
+                backgroundColor: 'rgba(0, 74, 173, 0.2)',
+                borderColor: colors.deepBlue,
+                pointBackgroundColor: colors.deepBlue,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: colors.deepBlue
+            }]
+        };
+
+        new Chart(document.getElementById('embeddingModelChart'), {
+            type: 'radar',
+            data: embeddingData,
+            options: {
+                ...sharedChartOptions,
+                scales: {
+                    r: {
+                        angleLines: { color: '#d1d5db' },
+                        grid: { color: '#e5e7eb' },
+                        pointLabels: {
+                            font: { size: 12, family: "'Inter', sans-serif" },
+                            color: '#374151'
+                        },
+                        ticks: {
+                            color: '#fff',
+                            backdropColor: 'rgba(0,0,0,0)',
+                            stepSize: 2
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
