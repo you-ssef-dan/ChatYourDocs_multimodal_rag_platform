@@ -1,18 +1,20 @@
 # Ignore Python cache
-ingestions/__pycache__/
+ingestion/__pycache__/
 models/__pycache__/
 prompts/__pycache__/
 __pycache__/
 *.pyc
 
 # Ignore virtual environment
-/venv/
+venv/
 
 # Ignore environment variables file
 .env
 
-# Ignore vector store files
+# Ignore vector store files inside database folder, but keep the folder
 database/*
+!database/.gitkeep
 
-# Ignore documents folder contents
+# Ignore all documents inside documents folder, but keep the folder
 documents/*
+!documents/.gitkeep
