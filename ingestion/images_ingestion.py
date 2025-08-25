@@ -2,16 +2,13 @@
 print("🔧 Initializing image ingestion...")
 import chromadb
 from tqdm import tqdm
+import os
 from chromadb.utils.embedding_functions import OpenCLIPEmbeddingFunction
 from chromadb.utils.data_loaders import ImageLoader
 
 print("🔧 Initializing image ingestion...")
 
 def ingest_images(collection_name="images", file_paths=[], persist_dir="database"):
-    """
-    Ingest image files into ChromaDB using OpenCLIP embeddings.
-    Assumes file_paths only contain valid image paths.
-    """
     if not file_paths:
         print("⚠️ No images to ingest!")
         return
@@ -29,9 +26,13 @@ def ingest_images(collection_name="images", file_paths=[], persist_dir="database
     ids = [str(i) for i in range(len(file_paths))]
     uris = file_paths
 
-    print(f"📦 Adding {len(uris)} images to '{collection_name}'...")
+    # Print file names instead of just count
+    image_names = [os.path.basename(path) for path in uris]
+    print(f"📦 Adding images to '{collection_name}':")
+    for name in image_names:
+        print(f"   • {name}")
+
     for idx, uri in tqdm(zip(ids, uris), total=len(uris), desc="🖼️ Ingesting images"):
         collection.add(ids=[idx], uris=[uri])
 
-    print(f"✅ Ingested {len(uris)} images into '{collection_name}'.")
-    print(" image ingestion complete.")
+    print("✅ Image ingestion complete.")

@@ -10,7 +10,7 @@ app = FastAPI()
 
 # — Initialisation des retrievers et du client LLM —
 text_ret = get_text_retriever(k=5)
-image_ret = get_image_retriever(k=3)
+image_ret = get_image_retriever(k=5)
 client, MODEL_ID = load_openrouter_llm()
 # client, MODEL_ID = load_groq_llm()
 

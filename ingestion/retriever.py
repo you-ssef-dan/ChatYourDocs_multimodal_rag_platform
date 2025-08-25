@@ -15,7 +15,7 @@ def get_text_retriever(collection_name: str = "documents", k: int = 5):
     return vector_db.get_collection(collection_name).as_retriever(search_kwargs={"k": k})
 
 
-def get_image_retriever(collection_name: str = "images", k: int = 1, persist_dir: str = DEFAULT_PERSIST_DIR):
+def get_image_retriever(collection_name: str = "images", k: int = 5, persist_dir: str = DEFAULT_PERSIST_DIR):
     """
     Returns a function that performs similarity search on an image collection using a text query.
     Ensures embedding_function is provided to embed the text query.
@@ -40,7 +40,7 @@ def get_image_retriever(collection_name: str = "images", k: int = 1, persist_dir
     return retrieve_by_text
 
 
-def search_all(query: str, k: int = 3):
+def search_all(query: str, k: int = 5):
     """
     Performs global search over both text and image collections.
     Returns top-k results from both collections.

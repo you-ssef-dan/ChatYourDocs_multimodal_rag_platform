@@ -6,7 +6,7 @@ from langchain_community.vectorstores.utils import filter_complex_metadata
 class VectorDB:
     def __init__(self, persist_dir="database"):
         self.embedding = HuggingFaceEmbeddings(
-        model_name="Data-Lab/multilingual-e5-large-instruct-embedder-tgd",
+        model_name="sentence-transformers/all-mpnet-base-v2",
         model_kwargs={'device': 'cpu'},
         encode_kwargs={'normalize_embeddings': True}  # Normalize for better similarity
     )

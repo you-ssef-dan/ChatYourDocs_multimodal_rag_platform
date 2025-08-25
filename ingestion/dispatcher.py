@@ -19,13 +19,15 @@ def detect_and_ingest(folder="documents"):
         elif ext in IMG_EXT:
             imgs.append(path)
 
-    if docs:
-        print("📚 Docs detected → text ingestion")
-        ingest_texts(collection_name="documents", file_paths=docs)
 
     if imgs:
         print("🖼️ Images detected → image ingestion")
         ingest_images(collection_name="images", file_paths=imgs)
+
+        
+    if docs:
+        print("📚 Docs detected → text ingestion")
+        ingest_texts(collection_name="documents", file_paths=docs)
 
     if not docs and not imgs:
         print("⚠️ Nothing to ingest!")
