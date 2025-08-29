@@ -6,9 +6,7 @@ import os
 from chromadb.utils.embedding_functions import OpenCLIPEmbeddingFunction
 from chromadb.utils.data_loaders import ImageLoader
 
-print("🔧 Initializing image ingestion...")
-
-def ingest_images(collection_name="images", file_paths=[], persist_dir="database"):
+def ingest_images(user_id, chatbot_id, file_paths=[], persist_dir="database"):
     if not file_paths:
         print("⚠️ No images to ingest!")
         return
@@ -17,22 +15,24 @@ def ingest_images(collection_name="images", file_paths=[], persist_dir="database
     embedding_fn = OpenCLIPEmbeddingFunction()
     image_loader = ImageLoader()
 
+    # separate collection for images
     collection = client.get_or_create_collection(
-        name=collection_name,
+        name="images_collection",
         embedding_function=embedding_fn,
         data_loader=image_loader
     )
 
-    ids = [str(i) for i in range(len(file_paths))]
+    ids = [f"img_{user_id}_{chatbot_id}_{i}" for i in range(len(file_paths))]
     uris = file_paths
 
-    # Print file names instead of just count
-    image_names = [os.path.basename(path) for path in uris]
-    print(f"📦 Adding images to '{collection_name}':")
-    for name in image_names:
-        print(f"   • {name}")
+    metadatas = [{
+        "user_id": str(user_id),
+        "chatbot_id": str(chatbot_id),
+        "content_type": "image",
+        "source": os.path.basename(path)
+    } for path in file_paths]
 
-    for idx, uri in tqdm(zip(ids, uris), total=len(uris), desc="🖼️ Ingesting images"):
-        collection.add(ids=[idx], uris=[uri])
+    print(f"📦 Adding {len(file_paths)} images for user {user_id}, chatbot {chatbot_id}...")
+    collection.add(ids=ids, uris=uris, metadatas=metadatas)
 
-    print("✅ Image ingestion complete.")
+    print(f"✅ Image ingestion complete for user {user_id}, chatbot {chatbot_id}.")

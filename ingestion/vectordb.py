@@ -1,54 +1,69 @@
 #vectordb.py
+print("🔧 Initializing vector database...")
+import os
+import torch
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores.utils import filter_complex_metadata
 
 class VectorDB:
     def __init__(self, persist_dir="database"):
-        self.embedding = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-mpnet-base-v2",
-        model_kwargs={'device': 'cpu'},
-        encode_kwargs={'normalize_embeddings': True}  # Normalize for better similarity
-    )
-    
         self.persist_dir = persist_dir
+        device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    def get_collection(self, name):
-        return Chroma(
-            collection_name=name,
-            persist_directory=self.persist_dir,
-            embedding_function=self.embedding
+        # embeddings for docs
+        self.text_embedding = HuggingFaceEmbeddings(
+            model_name="hkunlp/instructor-xl",
+            model_kwargs={'device': device},
+            encode_kwargs={
+                "prompt": "Represent the document for retrieval:",
+                "normalize_embeddings": True
+            },
+            query_encode_kwargs={
+                "prompt": "Represent the question for retrieving supporting documents:",
+                "normalize_embeddings": True
+            }
         )
 
-    def store_documents(self, collection_name, documents, metadatas=None):
-        """Store documents in the given collection"""
+        self.docs_collection_name = "docs_collection"
+
+    def get_docs_collection(self):
+        return Chroma(
+            collection_name=self.docs_collection_name,
+            persist_directory=self.persist_dir,
+            embedding_function=self.text_embedding
+        )
+
+    def store_documents(self, documents, user_id, chatbot_id, content_type="text"):
+        """Store only text-based documents"""
         if not documents:
             return
 
-        chroma = self.get_collection(collection_name)
+        chroma = self.get_docs_collection()
         contents = [doc.page_content for doc in documents]
 
-        # Handle metadata safely
-        if metadatas is None:
-            metadatas = []
-            for doc in documents:
-                if not hasattr(doc, 'metadata'):
-                    doc.metadata = {}
-                try:
-                    filtered = filter_complex_metadata(doc)
-                    metadatas.append(filtered.metadata)
-                except Exception:
-                    metadatas.append({})  # Fallback to empty metadata
+        metadatas = []
+        for doc in documents:
+            if not hasattr(doc, 'metadata'):
+                doc.metadata = {}
+            try:
+                filtered = filter_complex_metadata(doc)
+                metadata = filtered.metadata.copy()
+            except Exception:
+                metadata = {}
+            metadata.update({
+                "user_id": str(user_id),
+                "chatbot_id": str(chatbot_id),
+                "content_type": content_type,
+                "source": doc.metadata.get("source", ""),
+                "element_type": doc.metadata.get("element_type", "")
+            })
+            metadatas.append(metadata)
 
-        chroma.add_texts(
-            texts=contents,
-            metadatas=metadatas
-        )
+        chroma.add_texts(texts=contents, metadatas=metadatas)
 
-        print(f"📥 Ingesting {len(documents)} documents into collection '{collection_name}'...")
-        print(f"✅ Successfully stored {len(documents)} documents in '{collection_name}' collection!")
-
+        print(f"📥 Ingested {len(documents)} {content_type} docs into {self.docs_collection_name}")
         return chroma
 
-# Singleton instance
+# Singleton
 vector_db = VectorDB()

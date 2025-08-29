@@ -1,3 +1,4 @@
+# text_ingestion.py
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
@@ -5,16 +6,12 @@ from langchain_experimental.text_splitter import SemanticChunker
 from langchain_huggingface import HuggingFaceEmbeddings
 from docling.datamodel.document import TextItem, TableItem, PictureItem
 from langchain.schema import Document
-from vectordb import vector_db
-from images_ingestion import ingest_images
+from .vectordb import vector_db
+from .images_ingestion import ingest_images
 from pathlib import Path
 from tqdm import tqdm
 import pandas as pd
 import os
-
-# Initialize directories
-DEFAULT_IMAGE_DIR = Path("documents")
-DEFAULT_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Configure Docling
 pipeline_options = PdfPipelineOptions(
@@ -26,7 +23,11 @@ converter = DocumentConverter(
     format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
 )
 
+
 def save_picture_item(element, conv_doc, out_dir: Path, base_name: str, counter: int):
+    """
+    Save a PictureItem to out_dir. Returns the saved filepath (str) or None.
+    """
     try:
         pil_img = element.get_image(conv_doc)
         if pil_img is None:
@@ -35,13 +36,19 @@ def save_picture_item(element, conv_doc, out_dir: Path, base_name: str, counter:
             pil_img = pil_img.convert("RGB")
         filename = f"{base_name}_picture_{counter}.png"
         filepath = out_dir / filename
+        # ensure out_dir exists
+        out_dir.mkdir(parents=True, exist_ok=True)
         pil_img.save(filepath, format="PNG")
         return str(filepath)
     except Exception as e:
         print(f"⚠️ Failed to save picture: {e}")
         return None
 
+
 def export_table_item(table_item, base_name: str, table_ix: int, out_dir: Path):
+    """
+    Export a TableItem to CSV in out_dir and return (csv_path_str or None, markdown_str)
+    """
     try:
         df = table_item.export_to_dataframe()
     except Exception:
@@ -54,6 +61,8 @@ def export_table_item(table_item, base_name: str, table_ix: int, out_dir: Path):
         except Exception as e:
             print(f"⚠️ Failed to extract table: {e}")
             df = pd.DataFrame()
+
+    out_dir.mkdir(parents=True, exist_ok=True)
     csv_path = out_dir / f"{base_name}-table-{table_ix + 1}.csv"
     table_md = ""
     if not df.empty:
@@ -64,12 +73,17 @@ def export_table_item(table_item, base_name: str, table_ix: int, out_dir: Path):
             print(f"⚠️ Failed to convert table: {e}")
     return str(csv_path) if csv_path.exists() else None, table_md
 
-def load_documents(file_paths):
+
+def load_documents(file_paths, out_dir: Path):
+    """
+    Convert documents with Docling and save extracted images & table CSVs to out_dir.
+    Returns (docs, extracted_images)
+    """
     docs = []
     extracted_images = []
     for path in tqdm(file_paths, desc="📂 Converting documents with Docling"):
         path = Path(path)
-        print(f"📄 Ingesting {path.name} ...")  # <- Added print here
+        print(f"📄 Ingesting {path.name} ...")
         base_name = path.stem
         doc_images = []
         try:
@@ -90,7 +104,7 @@ def load_documents(file_paths):
                 elif isinstance(element, TableItem):
                     table_counter += 1
                     csv_path, table_md = export_table_item(
-                        element, base_name, table_counter - 1, DEFAULT_IMAGE_DIR
+                        element, base_name, table_counter - 1, out_dir
                     )
                     content = table_md or "[table content]"
                     meta = {
@@ -100,11 +114,12 @@ def load_documents(file_paths):
                     }
                     if csv_path:
                         meta["csv_path"] = csv_path
+                        meta["local_path"] = csv_path
                     docs.append(Document(page_content=content, metadata=meta))
                 elif isinstance(element, PictureItem):
                     picture_counter += 1
                     pic_path = save_picture_item(
-                        element, conv_doc, DEFAULT_IMAGE_DIR, base_name, picture_counter
+                        element, conv_doc, out_dir, base_name, picture_counter
                     )
                     if pic_path:
                         doc_images.append(pic_path)
@@ -112,6 +127,7 @@ def load_documents(file_paths):
                             "source": str(path),
                             "element_type": "picture",
                             "picture_index": picture_counter,
+                            "local_path": pic_path,
                         }
                         docs.append(Document(
                             page_content=f"[IMAGE: {os.path.basename(pic_path)}]",
@@ -125,6 +141,7 @@ def load_documents(file_paths):
                         metadata={"source": str(path), "element_type": "full_document"}
                     ))
             except Exception:
+                # ignore export_to_markdown failures
                 pass
             extracted_images.extend(doc_images)
             print(f"📸 Extracted {len(doc_images)} images from {path.name}")
@@ -134,19 +151,52 @@ def load_documents(file_paths):
     print(f"📊 Total extracted images: {len(extracted_images)}")
     return docs, extracted_images
 
-def ingest_texts(collection_name="documents", file_paths=None):
+
+def ingest_texts(user_id, chatbot_id, file_paths=None, base_storage: Path = Path("uploads")):
+    """
+    Ingest texts and store images & tables under:
+      {base_storage}/users/{user_id}/{chatbot_id}/documents
+
+    - file_paths: list of files to ingest
+    - base_storage: base folder (defaults to 'uploads')
+    """
     if not file_paths:
         print("⚠️ No documents to ingest!")
         return
-    docs, extracted_images = load_documents(file_paths)
+
+    # Make sure base_storage is a Path
+    base_storage = Path(base_storage)
+
+    # Build and ensure user/chatbot-specific documents directory
+    out_dir = base_storage / "users" / str(user_id) / str(chatbot_id) / "documents"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    docs, extracted_images = load_documents(file_paths, out_dir)
     if not docs:
         print("⚠️ No documents were successfully loaded.")
         return
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+
+    # Create embeddings & splitter
+    embeddings = HuggingFaceEmbeddings(model_name="hkunlp/instructor-xl")
     splitter = SemanticChunker(embeddings=embeddings, breakpoint_threshold_type="percentile")
+
     chunks = splitter.split_documents(docs)
-    vector_db.store_documents(collection_name=collection_name, documents=chunks)
-    print(f"✅ {len(chunks)} text chunks added to '{collection_name}'.")
+
+    # Store with user_id and chatbot_id metadata
+    vector_db.store_documents(
+        documents=chunks,
+        user_id=user_id,
+        chatbot_id=chatbot_id,
+        content_type="text"
+    )
+
+    print(f"✅ {len(chunks)} text chunks added for user {user_id}, chatbot {chatbot_id}.")
+
     if extracted_images:
+        # extracted_images already contain absolute/relative paths inside out_dir
         print(f"🖼️ Ingesting {len(extracted_images)} images…")
-        ingest_images(collection_name="images", file_paths=extracted_images)
+        ingest_images(
+            user_id=user_id,
+            chatbot_id=chatbot_id,
+            file_paths=extracted_images
+        )
