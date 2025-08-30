@@ -1,8 +1,0 @@
-Model Prameters,Value
-Training iterations,50
-Batch size,64
-Sequence length,320
-Step length,160
-Optimizer,Adam
-Momentums of Adam,"0.9 ( β 1 ), 0.99 ( β 2 )"
-Learning rate,0.0002
